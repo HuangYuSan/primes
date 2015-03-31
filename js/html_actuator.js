@@ -7,6 +7,60 @@ function HTMLActuator() {
   this.score = 0;
 }
 
+function tau(n) {
+	var anzahl = 1;
+	var zahl = n;
+	for(var i = 1; i < zahl; i++) {
+		if(zahl%i == 0) {
+			anzahl++;
+		}
+	}
+	return anzahl;
+}
+
+function isPrime(n) {
+ if (isNaN(n) || !isFinite(n) || n%1 || n<2) return false; 
+ var m=Math.sqrt(n);
+ for (var i=2;i<=m;i++) if (n%i==0) return false;
+ return true;
+}
+
+function textColor(value) {
+	if (value == 1) {
+		return "white";
+	}
+	return "white";
+}
+
+function glow(value) {
+	var transparency1 = 0.4 * (1-1/value);
+	var transparency2 = 0.23 * (1-1/value);
+	return "0 0 30px 10px rgba(243, 215, 116, " + transparency1 + "), inset 0 0 0 1px rgba(255, 255, 255, " + transparency2 + ")";
+}
+
+function niceRGB(value) {
+	if(isPrime(value)) {
+		return ("#f65e3b");
+	}
+	if (value === 1) {
+		return ("#BA3D3D");
+	}
+	/*
+    var r = value ;//+ 0.2*value*value*value;
+	var g = 150-value;
+	var b = 150+ 0.1*(((value*value*value)%256)-150);
+	*/
+	var tauValue = tau(value);
+	var r = (1-5*1/tauValue)*231 + 5*1/tauValue*242;
+	var g = (1-5*1/tauValue)*242 + 5*1/tauValue*173;
+	var b = (1-5*1/tauValue)*12 + 5*1/tauValue*12;
+    return (
+        "rgb(" + Math.floor(r)%256 + ", "
+        + Math.floor(g)%256 + ", "
+        + Math.floor(b)%256 + ")"
+    );
+}
+
 HTMLActuator.prototype.actuate = function (grid, metadata) {
   var self = this;
 
@@ -55,9 +109,9 @@ HTMLActuator.prototype.addTile = function (tile) {
   var positionClass = this.positionClass(position);
 
   // We can't use classlist because it somehow glitches when replacing classes
-  var classes = ["tile", "tile-" + tile.value, positionClass];
+  var classes = ["tile", "tile-"+tile.value, positionClass];
 
-  if (tile.value > 2048) classes.push("tile-super");
+  if (tile.value >= 1000) classes.push("tile-super");
 
   this.applyClasses(wrapper, classes);
 
@@ -82,7 +136,14 @@ HTMLActuator.prototype.addTile = function (tile) {
     classes.push("tile-new");
     this.applyClasses(wrapper, classes);
   }
+  
+  var offset = Math.random();
 
+
+  this.setColor(inner, niceRGB(tile.value));
+  this.setTextColor(inner, textColor(tile.value));
+  this.setGlow(inner, glow(tile.value));
+	
   // Add the inner part of the tile to the wrapper
   wrapper.appendChild(inner);
 
@@ -93,6 +154,18 @@ HTMLActuator.prototype.addTile = function (tile) {
 HTMLActuator.prototype.applyClasses = function (element, classes) {
   element.setAttribute("class", classes.join(" "));
 };
+
+HTMLActuator.prototype.setColor = function (element, color) {
+  element.style.background = color;
+};
+
+HTMLActuator.prototype.setTextColor = function (element, color) {
+  element.style.color = color;
+};
+
+HTMLActuator.prototype.setGlow = function (element, glow) {
+	element.style.boxShadow = glow;
+}
 
 HTMLActuator.prototype.normalizePosition = function (position) {
   return { x: position.x + 1, y: position.y + 1 };

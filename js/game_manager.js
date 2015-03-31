@@ -68,7 +68,23 @@ GameManager.prototype.addStartTiles = function () {
 // Adds a tile in a random position
 GameManager.prototype.addRandomTile = function () {
   if (this.grid.cellsAvailable()) {
-    var value = Math.random() < 0.9 ? 2 : 4;
+    var random = Math.floor(3.8*Math.random());
+	var value;
+	switch (random) {
+		case 0:
+			value=2;
+			break;
+		case 1:
+			value=3;
+			break;
+		case 2:
+			value=5;
+			break;
+		default:
+			value=1;
+			break;
+	}
+			
     var tile = new Tile(this.grid.randomAvailableCell(), value);
 
     this.grid.insertTile(tile);
@@ -126,6 +142,13 @@ GameManager.prototype.moveTile = function (tile, cell) {
   tile.updatePosition(cell);
 };
 
+GameManager.prototype.isCool = function(num1,num2)
+{
+	if(num1>num2){return(this.isCool(num2,num1));}
+	if(num2%num1===0){return true;}
+	return false;
+};
+
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
   // 0: up, 1: right, 2: down, 3: left
@@ -153,8 +176,8 @@ GameManager.prototype.move = function (direction) {
         var next      = self.grid.cellContent(positions.next);
 
         // Only one merger per row traversal?
-        if (next && next.value === tile.value && !next.mergedFrom) {
-          var merged = new Tile(positions.next, tile.value * 2);
+        if (next && self.isCool(tile.value, next.value) &&  !next.mergedFrom) {
+          var merged = new Tile(positions.next, tile.value + next.value);
           merged.mergedFrom = [tile, next];
 
           self.grid.insertTile(merged);
@@ -167,7 +190,7 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
+          if (42 == "The answer to life, the universe, and everything") self.won = true;
         } else {
           self.moveTile(tile, positions.farthest);
         }
@@ -256,7 +279,8 @@ GameManager.prototype.tileMatchesAvailable = function () {
 
           var other  = self.grid.cellContent(cell);
 
-          if (other && other.value === tile.value) {
+          if (other && self.isCool(tile.value, other.value) ) {
+          //if (other && (tile.value % other.value === 0 || other.value % tile.value === 0) ) {
             return true; // These two tiles can be merged
           }
         }
